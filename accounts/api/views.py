@@ -26,7 +26,8 @@ class AccountViewSet(viewsets.ViewSet):
     serializer_class= SignupSerializer
     @action(methods=['GET'],detail=False)#detail=false 说明是定义在整个accounts上的动作，=true说明是定义在某个object上的动作
     def login_status(self,request):
-        data={'has_logged_in': request.user.is_authenticated}
+        data={'has_logged_in': request.user.is_authenticated,
+              'ip': request.META['REMOTE_ADDR']}
         if request.user.is_authenticated:
             data['user']=UserSerializer(request.user).data
         return Response(data)
@@ -50,11 +51,13 @@ class AccountViewSet(viewsets.ViewSet):
         username = serializer.validated_data['username']
         password = serializer.validated_data['password']
 
+        #user doesn't exist
         if not User.objects.filter(username=username).exists():
+            # queryset=User.objects.filter(username=username)
             #print(queryset.query) 打印语句
             return Response({
                 "success": False,
-                "message": "User does not exists.",
+                "message": "User does not exist.",
             }, status=400)
 
         user = django_authenticate(username=username,password=password)
@@ -67,7 +70,7 @@ class AccountViewSet(viewsets.ViewSet):
         return Response({
             "success": True,
             "user": UserSerializer(instance=user).data,
-        }, status=400)
+        }, status=200)
 
     @action(methods=['POST'],detail=False)
     def signup(self,request):
