@@ -21,6 +21,7 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all().order_by('-date_joined')
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated]#必须登陆才能操作
+    # permission_classes = [permissions.AllowAny]
 
 class AccountViewSet(viewsets.ViewSet):
     serializer_class= SignupSerializer
@@ -48,7 +49,7 @@ class AccountViewSet(viewsets.ViewSet):
                 "errors": serializer.errors,
             },status=400)#默认status是200
         #validation ok, login
-        username = serializer.validated_data['username']
+        username = serializer.validated_data['username'].lower()
         password = serializer.validated_data['password']
 
         #user doesn't exist
@@ -74,15 +75,15 @@ class AccountViewSet(viewsets.ViewSet):
 
     @action(methods=['POST'],detail=False)
     def signup(self,request):
-        serialzer = SignupSerializer(data=request.data)
-        if not serialzer.is_valid():
+        serializer = SignupSerializer(data=request.data)
+        if not serializer.is_valid():
             return Response({
                 "success": False,
                 "message": "Please check input.",
-                "errors": serialzer.errors,
+                "errors": serializer.errors,
             }, status=400)
 
-        user = serialzer.save()#create a new user
+        user = serializer.save()#create a new user
         django_login(request, user)
         return Response({
             "success": True,
