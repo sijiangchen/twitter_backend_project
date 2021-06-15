@@ -1,4 +1,4 @@
-from django.test import TestCase
+from testing.testcases import TestCase
 from rest_framework.test import APIClient
 from django.contrib.auth.models import User
 #login/后面的/必须要打
@@ -12,15 +12,11 @@ class AccountApiTests(TestCase):
 
     def setUp(self) -> None:
         self.client = APIClient()
-        self.user = self.createUser(
+        self.user = self.create_user(
             username='admin',
             email='admin@jiuzhang.com',
             password='correct password',
         )
-
-    def createUser(self,username,email,password):
-        #不能直接用create 因为password要被加密，username和email需要进行一些normalize处理
-        return User.objects.create_user(username, email, password)
 
     def test_login(self):
         #测试必须用post而不是get
@@ -61,6 +57,7 @@ class AccountApiTests(TestCase):
         self.assertEqual(response.status_code,400)
         self.assertEqual(response.data['message'],'User does not exist.')
         # self.assertEqual(str(response.data['errors']['username'][0]),'User does not exist.')
+
     def test_logout(self):
         #先登录
         self.client.post(LOGIN_URL,{
